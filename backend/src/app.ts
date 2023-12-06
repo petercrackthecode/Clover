@@ -4,8 +4,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import http from 'http';
-// import axios from 'axios';
+import logger from './utils/logger';
 import cors from 'cors';
+import { Server } from 'socket.io';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 import { handleError } from './helpers/error';
@@ -25,6 +26,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/', router);
+app.post('/webhook', (req: express.Request, res: express.Response) => {
+  logger.info('Webhook received: ', req.body);
+  const {
+    status,
+    id,
+    input: { prompt, negative_prompt },
+    output,
+  } = req.body;
+
+  console.log(prompt, negative_prompt);
+
+  if (status === 'COMPLETED') {
+    io.emit('taskFinished', { message: `Task ${id} is finished`, ok: true, data: output });
+  } else io.emit('taskFinished', { message: `Task ${id} is ${status.toLowerCase()}`, ok: false, data: null });
+
+  res.status(200).json({ message: 'Webhook processed', ok: true, data: null });
+});
 
 // catch 404 and forward to error handler
 app.use((_req, _res, next) => {
@@ -41,6 +59,14 @@ const port = process.env.PORT || '8000';
 app.set('port', port);
 
 const server = http.createServer(app);
+const io = new Server(server);
+
+io.on('connection', (socket) => {
+  logger.info('client connected');
+  socket.on('disconnect', () => {
+    logger.info('client disconnected');
+  });
+});
 
 function onError(error: { syscall: string; code: string }) {
   if (error.syscall !== 'listen') {
