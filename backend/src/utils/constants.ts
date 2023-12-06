@@ -3,4 +3,6 @@ const RUNPOD_API = {
   STATUS: 'https://api.runpod.ai/v2/stable-diffusion-v1/status/',
 };
 
-export { RUNPOD_API };
+const WEBHOOK_URL = 'https://c93b-2600-1700-4260-5970-a0a0-fece-b50d-5aac.ngrok-free.app/webhook';
+
+export { RUNPOD_API, WEBHOOK_URL };
