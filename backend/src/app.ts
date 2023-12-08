@@ -6,12 +6,14 @@ import cookieParser from 'cookie-parser';
 import http from 'http';
 import logger from './utils/logger';
 import cors from 'cors';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 import { handleError } from './helpers/error';
 import httpLogger from './middlewares/httpLogger';
 import router from './routes/index';
+
+const sockets: Map<string, Socket> = new Map();
 
 const app: express.Application = express();
 const corsOptions = {
@@ -38,8 +40,18 @@ app.post('/webhook', (req: express.Request, res: express.Response) => {
   console.log(prompt, negative_prompt);
 
   if (status === 'COMPLETED') {
-    io.emit('taskFinished', { message: `Task ${id} is finished`, ok: true, data: output });
-  } else io.emit('taskFinished', { message: `Task ${id} is ${status.toLowerCase()}`, ok: false, data: null });
+    sockets.forEach((_value, key) => console.log(key));
+    sockets.forEach((socket) => {
+      socket.emit('taskFinished', { message: `Task ${id} is finished`, ok: true, data: output });
+    });
+    logger.info('Task finished: ');
+    console.log('output = ', output);
+  } else {
+    sockets.forEach((socket) => {
+      socket.emit('taskFinished', { message: `Task ${id} is ${status.toLowerCase()}`, ok: false, data: null });
+    });
+    logger.info(`Task ${id} is ${status.toLowerCase()}`);
+  }
 
   res.status(200).json({ message: 'Webhook processed', ok: true, data: null });
 });
@@ -59,12 +71,15 @@ const port = process.env.PORT || '8000';
 app.set('port', port);
 
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, { cors: { origin: /* corsOptions.origin */ '*', methods: ['GET', 'POST'] } });
 
 io.on('connection', (socket) => {
-  logger.info('client connected');
+  logger.info(`socket client ${socket.id} connected`);
+  socket.emit('hi', { message: 'hello from server' });
+  sockets.set(socket.id, socket);
   socket.on('disconnect', () => {
-    logger.info('client disconnected');
+    logger.info(`socket client ${socket.id} disconnected'`);
+    sockets.delete(socket.id);
   });
 });
 

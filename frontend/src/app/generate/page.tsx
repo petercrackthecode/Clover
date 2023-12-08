@@ -1,64 +1,97 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { BACKEND_URL } from "@/lib/constants";
 import axios from "axios";
-import { MouseEvent, useEffect, useState, ComponentProps } from "react";
+import {
+  MouseEvent,
+  useEffect,
+  useState,
+  useContext,
+  ComponentProps,
+  useRef,
+} from "react";
 import React from "react";
 import ImageViewer from "@/components/imageViewer";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
+import { io, Socket } from "socket.io-client";
+import { BACKEND_URL } from "@/lib/constants";
+// import { SocketContext } from "@/context/socketRef";
+// import { Socket } from "socketRef.io-client";
 
 type Image = {
   id: string;
   url: string;
   prompt: string;
+  isLoading: boolean;
 };
 
+let socket: Socket;
 export default function Generate() {
   const [prompt, setPrompt] = useState<string>("");
+  const [negativePrompt, setNegativePrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [image, setImage] = useState<Image>({} as Image);
+  const initSocket = async () => {
+    if (!socket) socket = io(BACKEND_URL);
+
+    socket.on("connect", () => {
+      console.log("connected. Socket id = ", socket.id);
+    });
+
+    socket.on("hi", (message) => {
+      console.log("message = ", message);
+    });
+
+    socket.on("taskFinished", (data) => {
+      console.log("data = ", data);
+    });
+  };
+
+  const disconnectSocket = () => {
+    if (socket) {
+      socket.disconnect();
+    }
+  };
 
   useEffect(() => {
-    console.log("setting image");
-    if (typeof window !== "undefined" && window.localStorage && image.url) {
-      console.log("within the if statement");
-      const currentImages = window.localStorage.getItem("images");
-      const imagesJSON = JSON.parse(currentImages ? currentImages : "[]");
-      const newImages = imagesJSON.concat(image);
-      console.log("newImages", newImages);
-      window.localStorage.setItem("images", JSON.stringify(newImages));
+    if (typeof window !== undefined) {
+      initSocket();
     }
-  }, [image]);
+
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
+  // useEffect(() => {
+  //   console.log("setting image");
+  //   if (typeof window !== "undefined" && window.localStorage && image.url) {
+  //     console.log("within the if statement");
+  //     const currentImages = window.localStorage.getItem("images");
+  //     const imagesJSON = JSON.parse(currentImages ? currentImages : "[]");
+  //     const newImages = imagesJSON.concat(image);
+  //     console.log("newImages", newImages);
+  //     window.localStorage.setItem("images", JSON.stringify(newImages));
+  //   }
+  // }, [image]);
 
   const handleGenerateImage = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (prompt.trim() === "") return;
 
     const data = JSON.stringify({
-      input: {
-        prompt,
-        num_inference_steps: 25,
-        refiner_inference_steps: 50,
-        width: 1024,
-        height: 1024,
-        guidance_scale: 7.5,
-        strength: 0.4,
-        seed: null,
-        num_images: 1,
-      },
+      prompt,
+      negative_prompt: negativePrompt,
     });
 
     let config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://api.runpod.ai/v2/sdxl/runsync",
+      url: "http://localhost:5000/generate",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: "MA50JX0SJNG8GNAQQ7K79VHGY8TI2KP3URLYQXX7",
       },
       data,
     };
@@ -68,8 +101,9 @@ export default function Generate() {
         console.log(res.data);
         setImage({
           id: res.data.id,
-          url: res.data.output.images[0],
           prompt: prompt.trim(),
+          isLoading: true,
+          url: "",
         });
       })
       .catch((error) => console.log(error));

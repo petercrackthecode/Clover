@@ -13,8 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
-  const pathname = usePathname();
-
   return (
     <div className="flex flew-row justify-between items-center w-full bg-black px-5 py-3">
       <h1 className="text-white font-black text-3xl italic">Clover</h1>

@@ -11,6 +11,8 @@ export const generateImages = async (req: express.Request, res: express.Response
   }
 
   if (typeof negative_prompt !== 'string') {
+    logger.error('typeof negative_prompt = ', typeof negative_prompt);
+    logger.error(`negative_prompt = |${negative_prompt}|`);
     logger.error('Error: invalid negative_prompt');
     return res.status(400).json({ message: 'negative_prompt must be a string', ok: false, data: null });
   }
