@@ -31,6 +31,8 @@ function NavLinks() {
   const items: { title: string; href: string }[] = [
     { title: "Home", href: "/" },
     { title: "Generate", href: "/generate" },
+    { title: "History", href: "/history" },
+    { title: "Likes", href: "/likes" },
   ];
 
   return (

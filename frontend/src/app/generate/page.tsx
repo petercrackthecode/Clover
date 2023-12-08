@@ -2,40 +2,27 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
-import {
-  MouseEvent,
-  useEffect,
-  useState,
-  useContext,
-  ComponentProps,
-  useRef,
-} from "react";
+import { MouseEvent, useEffect, useState, ComponentProps } from "react";
 import React from "react";
-import ImageViewer from "@/components/imageViewer";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { BACKEND_URL } from "@/lib/constants";
-// import { SocketContext } from "@/context/socketRef";
-// import { Socket } from "socketRef.io-client";
-
-type Image = {
-  id: string;
-  url: string;
-  prompt: string;
-  isLoading: boolean;
-};
+import { Images, Image, Prompts, Prompt } from "@/models";
+import ImagesGroup from "@/components/imagesGroup";
 
 let socket: Socket;
 export default function Generate() {
   const [prompt, setPrompt] = useState<string>("");
+  const [isSendingRequest, setIsSendingRequest] = useState<boolean>(false);
   const [negativePrompt, setNegativePrompt] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [image, setImage] = useState<Image>({} as Image);
+  const [prevPrompts, setPrevPrompts] = useState<Prompts>({} as Prompts);
+  const [images, setImages] = useState<Images>({} as Images);
+
   const initSocket = async () => {
     if (!socket) socket = io(BACKEND_URL);
-
+    console.log("socket = ", socket);
     socket.on("connect", () => {
       console.log("connected. Socket id = ", socket.id);
     });
@@ -56,7 +43,9 @@ export default function Generate() {
   };
 
   useEffect(() => {
+    console.log("hi");
     if (typeof window !== undefined) {
+      console.log("initializing socket");
       initSocket();
     }
 
@@ -64,17 +53,6 @@ export default function Generate() {
       disconnectSocket();
     };
   }, []);
-  // useEffect(() => {
-  //   console.log("setting image");
-  //   if (typeof window !== "undefined" && window.localStorage && image.url) {
-  //     console.log("within the if statement");
-  //     const currentImages = window.localStorage.getItem("images");
-  //     const imagesJSON = JSON.parse(currentImages ? currentImages : "[]");
-  //     const newImages = imagesJSON.concat(image);
-  //     console.log("newImages", newImages);
-  //     window.localStorage.setItem("images", JSON.stringify(newImages));
-  //   }
-  // }, [image]);
 
   const handleGenerateImage = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -95,19 +73,14 @@ export default function Generate() {
       },
       data,
     };
-    setIsGenerating(true);
+    setIsSendingRequest(true);
     await axios(config)
       .then((res) => {
         console.log(res.data);
-        setImage({
-          id: res.data.id,
-          prompt: prompt.trim(),
-          isLoading: true,
-          url: "",
-        });
+        // setPrevPrompts
       })
       .catch((error) => console.log(error));
-    setIsGenerating(false);
+    setIsSendingRequest(false);
   };
 
   return (
@@ -119,17 +92,26 @@ export default function Generate() {
             id="prompt"
             name="prompt"
             placeholder="A cute mouse pilot wearing aviator goggles, unreal engine render, 8k"
-            className="block mt-2 mb-4 bg-zinc-600 w-full resize-none border-0 focus:ring-0 outline-none placeholder:text-gray-400"
+            className="block mt-2 mb-2 bg-zinc-600 w-full resize-none border-0 focus:ring-0 outline-none placeholder:text-gray-400"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+          />
+          <label htmlFor="negativePrompt">Negative prompt</label>
+          <input
+            name="negativePrompt"
+            id="negativePrompt"
+            className="block w-full mt-2 mb-4 rounded-md border-0 p-1.5 bg-zinc-600 focus:ring-0 outline-none placeholder:text-gray-400 sm:text-sm sm:leading-6"
+            placeholder="text, blurry"
+            value={negativePrompt}
+            onChange={(e) => setNegativePrompt(e.target.value)}
           />
           <div className="w-full text-right">
             <Button
               className="rounded-full px-10 w-[150px] bg-indigo-700 hover:bg-indigo-600 border-[0.5px] border-slate-600"
               onClick={handleGenerateImage}
-              disabled={isGenerating}
+              disabled={isSendingRequest}
             >
-              {isGenerating ? (
+              {isSendingRequest ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
@@ -140,15 +122,7 @@ export default function Generate() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col">
-          <p>Number of images</p>
-          <div className="flex flex-row gap-x-4">
-            <p>0</p>
-            <SliderWrapper />
-            <p>4</p>
-          </div>
-        </div>
-        {image.url && <ImageViewer {...image} width={1024} height={1024} />}
+        <ImagesGroup />
       </div>
     </main>
   );
