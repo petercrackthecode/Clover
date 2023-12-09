@@ -42,7 +42,7 @@ app.post('/webhook', (req: express.Request, res: express.Response) => {
   if (status === 'COMPLETED') {
     sockets.forEach((_value, key) => console.log(key));
     sockets.forEach((socket) => {
-      socket.emit('taskFinished', { message: `Task ${id} is finished`, ok: true, data: output });
+      socket.emit('taskFinished', { message: `Task ${id} is finished`, ok: true, data: req.body });
     });
     logger.info('Task finished: ');
     console.log('output = ', output);
@@ -92,10 +92,8 @@ function onError(error: { syscall: string; code: string }) {
   switch (error.code) {
     case 'EACCES':
       process.exit(1);
-      break;
     case 'EADDRINUSE':
       process.exit(1);
-      break;
     default:
       throw error;
   }

@@ -4,12 +4,10 @@ import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { MouseEvent, useEffect, useState, ComponentProps } from "react";
 import React from "react";
-import { cn } from "@/lib/utils";
-import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { BACKEND_URL } from "@/lib/constants";
-import { Images, Image, Prompts, Prompt } from "@/models";
+import { Images, Image, Prompts, Prompt, PromptStack } from "@/models";
 import ImagesGroup from "@/components/imagesGroup";
 
 let socket: Socket;
@@ -18,6 +16,9 @@ export default function Generate() {
   const [isSendingRequest, setIsSendingRequest] = useState<boolean>(false);
   const [negativePrompt, setNegativePrompt] = useState<string>("");
   const [prevPrompts, setPrevPrompts] = useState<Prompts>({} as Prompts);
+  const [promptStack, setPromptStack] = useState<PromptStack>(
+    [] as PromptStack
+  );
   const [images, setImages] = useState<Images>({} as Images);
 
   const initSocket = async () => {
@@ -36,31 +37,40 @@ export default function Generate() {
     });
   };
 
-  const disconnectSocket = () => {
-    if (socket) {
-      socket.disconnect();
+  const getPrompts = () => {
+    const prompts = localStorage.getItem("prompts");
+    const _promptStack = localStorage.getItem("promptStack");
+    if (prompts) {
+      setPrevPrompts(JSON.parse(prompts));
+    }
+    if (_promptStack) {
+      setPromptStack(JSON.parse(_promptStack));
+    }
+  };
+
+  const getImages = () => {
+    const images = localStorage.getItem("images");
+    if (images) {
+      setImages(JSON.parse(images));
     }
   };
 
   useEffect(() => {
-    console.log("hi");
-    if (typeof window !== undefined) {
-      console.log("initializing socket");
+    if (typeof window !== undefined && window.localStorage) {
+      getPrompts();
+      getImages();
       initSocket();
     }
-
-    return () => {
-      disconnectSocket();
-    };
   }, []);
 
   const handleGenerateImage = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (prompt.trim() === "") return;
-
+    const currentPrompt = prompt.trim(),
+      currentNegativePrompt = negativePrompt.trim();
     const data = JSON.stringify({
-      prompt,
-      negative_prompt: negativePrompt,
+      prompt: currentPrompt,
+      negative_prompt: currentNegativePrompt,
     });
 
     let config = {
@@ -77,15 +87,33 @@ export default function Generate() {
     await axios(config)
       .then((res) => {
         console.log(res.data);
-        // setPrevPrompts
+        // need a better error handling here
+        // check for ok === false
+        const {
+          data: { id },
+        }: { data: { id: string } } = res.data;
+        const newPrompt: Prompt = {
+          prompt: currentPrompt,
+          negativePrompt: currentNegativePrompt,
+          imageIds: [],
+        };
+        const newPrompts = { ...prevPrompts, [id]: newPrompt };
+        const newPromptStack = [...promptStack, id];
+        localStorage.setItem("prompts", JSON.stringify(newPrompts));
+        setPrevPrompts(newPrompts);
+        setPromptStack(newPromptStack);
+        localStorage.setItem("promptStack", JSON.stringify(newPromptStack));
       })
       .catch((error) => console.log(error));
     setIsSendingRequest(false);
   };
 
   return (
-    <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center px-96">
-      <div className="flex flex-col gap-y-9 p-2 mt-24 w-full">
+    <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
+      <section
+        className="flex flex-col gap-y-9 py-2 mt-24 w-full xl:px-96 lg:px-60 md:px-20 sm:px-10"
+        style={{ border: "3px solid red" }}
+      >
         <div className="flex flex-col">
           <label htmlFor="prompt">Describe your image</label>
           <Textarea
@@ -122,23 +150,10 @@ export default function Generate() {
             </Button>
           </div>
         </div>
-        <ImagesGroup />
-      </div>
+      </section>
+      <section className="w-full px-10" style={{ border: "3px solid green" }}>
+        <ImagesGroup {...{ promptStack, prevPrompts, images }} />
+      </section>
     </main>
-  );
-}
-
-type SliderProps = ComponentProps<typeof Slider>;
-
-export function SliderWrapper({ className, ...props }: SliderProps) {
-  const [value, setValue] = useState<number>(1);
-  return (
-    <Slider
-      defaultValue={[1]}
-      max={4}
-      step={1}
-      className={cn("w-[100%]", className)}
-      {...props}
-    />
   );
 }
