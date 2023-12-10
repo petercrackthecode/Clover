@@ -5,12 +5,7 @@ import Link from "next/link";
 import { ImageViewer } from "@/components/imageViewer";
 import { useMemo, useEffect } from "react";
 import axios from "axios";
-
-type Image = {
-  id: string;
-  url: string;
-  prompt: string;
-};
+import { Images, Image } from "@/models";
 
 export default function Home() {
   useEffect(() => {
@@ -21,14 +16,24 @@ export default function Home() {
     testServer();
   }, []);
 
-  const images = useMemo(() => {
+  const images = useMemo((): Images => {
     if (typeof window !== "undefined" && window.localStorage) {
       const currentImages = window.localStorage.getItem("images");
-      const imagesArray = JSON.parse(currentImages ? currentImages : "[]");
-      console.log("imagesArray", imagesArray);
-      return imagesArray;
+      const imagesObj = JSON.parse(
+        currentImages ? currentImages : "{}"
+      ) as Images;
+      const uniqueImagesUrl = new Set<string>();
+      const uniqueImagesObj = {} as Images;
+      Object.entries(imagesObj).forEach(([key, image]) => {
+        if (!uniqueImagesUrl.has(image.url)) {
+          uniqueImagesUrl.add(image.url);
+          uniqueImagesObj[key] = image;
+        }
+      });
+      console.log("uniqueImagesObj", uniqueImagesObj);
+      return uniqueImagesObj;
     }
-    return [] as Image[];
+    return {} as Images;
   }, []);
   return (
     <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
@@ -54,15 +59,17 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="flex gap-y-9 m-5 mt-24 w-full px-5">
-        <ImagesGalleries images={images} filterImages={() => {}} />
-      </div>
+      {Object.keys(images).length > 0 && (
+        <div className="flex gap-y-9 m-5 mt-24 w-full px-5">
+          <ImagesGalleries images={images} filterImages={() => {}} />
+        </div>
+      )}
     </main>
   );
 }
 
 interface ImagesGalleriesProps {
-  images: Image[];
+  images: Images;
   filterImages: () => void;
 }
 
@@ -72,10 +79,9 @@ function ImagesGalleries({
 }: ImagesGalleriesProps): React.JSX.Element {
   return (
     <div className="flex-row justify-center flex flex-wrap gap-5">
-      {/* {images.map((image) => (
-        <ImageViewer key={image.id} {...image} width={520} height={520} />
-      ))} */}
-      <div>images</div>
+      {Object.entries(images).map(([key, { prompt, negativePrompt, url }]) => (
+        <ImageViewer key={key} {...{ prompt, negativePrompt, url }} />
+      ))}
     </div>
   );
 }

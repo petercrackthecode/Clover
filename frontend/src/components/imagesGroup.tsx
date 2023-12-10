@@ -48,7 +48,11 @@ export default function ImagesGroup({
         <div className="w-full relative grid lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-2 gap-4">
           {imageIds.map((imageId: string) => (
             // convert the imageId into real image Url through localStorage.getItem('images')
-            <ImageViewer key={imageId} {...getImageById(imageId)} />
+            <ImageViewer
+              key={imageId}
+              {...getImageById(imageId)}
+              customClasses="lg:h-72 md:h-52 sm:h-64 max-h-full m-auto"
+            />
           ))}
         </div>
         <div className="w-full flex flex-row justify-center">

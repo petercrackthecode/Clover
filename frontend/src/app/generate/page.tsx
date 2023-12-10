@@ -42,8 +42,8 @@ export default function Generate() {
     }) => {
       const { prompt, negative_prompt } = input;
       const promptId = id;
-      let updatedImages: Images = JSON.parse(
-        localStorage.getItem("images") || "{}"
+      let updatedImages: Images = lodash.cloneDeep(
+        JSON.parse(localStorage.getItem("images") || "{}")
       );
 
       setPrevPrompts((prevPrompts) => {
@@ -57,18 +57,22 @@ export default function Generate() {
           promptWithId.imageIds.length !== 0
         )
           return prevPrompts;
+        console.log("promptWithId = ", promptWithId);
+        console.log("prompt = ", prompt);
+        console.log("promptId = ", promptId);
+        console.log("updating prevPrompts");
         for (const img of output) {
           // image already exists
-          if (!img || !img.image || updatedImages[img.image]) continue;
+          if (!img || !img.image) continue;
           let _img: Image = {
             url: img.image,
             prompt,
             negativePrompt: negative_prompt,
             promptId,
           };
-          const imgId = uuidv4();
-          updatedPrompts[promptId].imageIds.push(imgId);
-          updatedImages[imgId] = _img;
+          const imageId = uuidv4();
+          updatedImages[imageId] = _img;
+          updatedPrompts[promptId].imageIds.push(imageId);
         }
         localStorage.setItem("prompts", JSON.stringify(updatedPrompts));
         localStorage.setItem("images", JSON.stringify(updatedImages));
@@ -80,7 +84,6 @@ export default function Generate() {
 
   const initSocket = useCallback(async () => {
     if (!socket) socket = io(BACKEND_URL);
-    console.log("socket = ", socket);
     socket.on("connect", () => {
       console.log("connected. Socket id = ", socket.id);
     });
@@ -111,6 +114,10 @@ export default function Generate() {
       setPromptStack(JSON.parse(_promptStack));
     }
   }, []);
+
+  useEffect(() => {
+    console.log("within useEffect, prevPrompts = ", prevPrompts);
+  }, [prevPrompts]);
 
   useEffect(() => {
     if (typeof window !== undefined && window.localStorage) {
