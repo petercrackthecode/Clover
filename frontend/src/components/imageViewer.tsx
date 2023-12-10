@@ -3,30 +3,20 @@ import React from "react";
 import { Image as ImageIcon } from "lucide-react";
 // import Image from "@/models";
 
-type ImageViewerProps = {
+export type ImageViewerProps = {
   url: string;
   prompt: string;
   negativePrompt: string;
-  width: number;
-  height: number;
 };
 
 export function ImageViewer({
   url,
   prompt,
   negativePrompt,
-  width,
-  height,
 }: ImageViewerProps): React.JSX.Element {
   return (
-    <div className="text-center">
-      <img
-        src={url}
-        alt={prompt}
-        width={width}
-        height={height}
-        className="rounded-lg"
-      />
+    <div className="text-center cursor-pointer">
+      <img src={url} alt={prompt} className="rounded-lg" />
     </div>
   );
 }

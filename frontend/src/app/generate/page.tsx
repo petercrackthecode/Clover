@@ -40,7 +40,6 @@ export default function Generate() {
       id: string;
       output: ImageResponse[];
     }) => {
-      console.log("input = ", input);
       const { prompt, negative_prompt } = input;
       const promptId = id;
       let updatedImages: Images = JSON.parse(
