@@ -63,7 +63,7 @@ export default function ImagesGroup({
   };
 
   return (
-    <div className="flex flex-col w-full gap-5">
+    <div className="flex flex-col w-full gap-10">
       {promptStack
         .toReversed()
         .map((promptId) => promptToImages(promptId, prevPrompts[promptId]))}

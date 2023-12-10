@@ -179,7 +179,7 @@ export default function Generate() {
   return (
     <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
       <section
-        className="flex flex-col gap-y-9 py-2 mt-24 w-full xl:px-96 lg:px-60 md:px-20 sm:px-10"
+        className="flex flex-col gap-y-9 pt-2 mb-5 mt-24 w-full xl:px-96 lg:px-60 md:px-20 sm:px-10"
         style={{ border: "3px solid red" }}
       >
         <div className="flex flex-col">

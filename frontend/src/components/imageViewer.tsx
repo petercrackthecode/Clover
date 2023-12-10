@@ -23,6 +23,7 @@ export function ImageViewer({
         "text-center overflow-y-hidden cursor-pointer object-contain",
         customClasses
       )}
+      style={{ border: "3px solid green" }}
     >
       <img src={url} alt={prompt} className="h-full object-fill" />
     </div>

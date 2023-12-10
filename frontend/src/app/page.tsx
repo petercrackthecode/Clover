@@ -3,18 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { ImageViewer } from "@/components/imageViewer";
-import { useMemo, useEffect } from "react";
-import axios from "axios";
+import { useMemo, useEffect, useState } from "react";
+import GridPicker from "@/components/gridPicker";
 import { Images, Image } from "@/models";
+import classNames from "classnames";
 
 export default function Home() {
-  useEffect(() => {
-    async function testServer() {
-      const res = await axios.get("http://localhost:5000");
-      console.log(res.data);
+  const [gridCol, setGridCol] = useState<number>(6);
+
+  useEffect(function getGridColFromLocalStorage() {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const gridColStr = window.localStorage.getItem("gridCol");
+      const gridColVal = gridColStr ? parseInt(gridColStr) : 6;
+      setGridCol(gridColVal);
     }
-    testServer();
   }, []);
+
+  useEffect(
+    function saveGridColToLocalStorage() {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.setItem("gridCol", gridCol.toString());
+      }
+    },
+    [gridCol]
+  );
 
   const images = useMemo((): Images => {
     if (typeof window !== "undefined" && window.localStorage) {
@@ -37,7 +49,7 @@ export default function Home() {
   }, []);
   return (
     <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
-      <div className="w-[500px] flex flex-col gap-y-9 p-2 mt-24">
+      <section className="w-[500px] flex flex-col gap-y-9 p-2 mt-24">
         <h1 className="text-7xl font-semibold text-center">Clover</h1>
         <div className="flex flex-col gap-y-4">
           <div className="p-2 bg-zinc-600 flex flex-row rounded-full">
@@ -58,11 +70,21 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </div>
+      </section>
+      <section className="flex flex-row justify-center w-full gap-x-2 mt-24">
+        <GridPicker
+          value={gridCol}
+          onValueChange={(value: number[]) => setGridCol(value[0])}
+        />
+      </section>
       {Object.keys(images).length > 0 && (
-        <div className="flex gap-y-9 m-5 mt-24 w-full px-5">
-          <ImagesGalleries images={images} filterImages={() => {}} />
-        </div>
+        <section className="flex gap-y-9 m-5 mt-24 w-full px-5">
+          <ImagesGalleries
+            images={images}
+            col={gridCol}
+            filterImages={() => {}}
+          />
+        </section>
       )}
     </main>
   );
@@ -71,14 +93,20 @@ export default function Home() {
 interface ImagesGalleriesProps {
   images: Images;
   filterImages: () => void;
+  col: number;
 }
 
 function ImagesGalleries({
   images,
   filterImages,
+  col,
 }: ImagesGalleriesProps): React.JSX.Element {
+  console.log("col", col);
   return (
-    <div className="flex-row justify-center flex flex-wrap gap-5">
+    <div
+      className={classNames("grid w-full gap-5")}
+      style={{ gridTemplateColumns: `repeat(${col}, 1fr)` }}
+    >
       {Object.entries(images).map(([key, { prompt, negativePrompt, url }]) => (
         <ImageViewer key={key} {...{ prompt, negativePrompt, url }} />
       ))}
