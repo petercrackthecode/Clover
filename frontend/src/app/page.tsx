@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
-import ImageViewer from "@/components/imageViewer";
+import { ImageViewer } from "@/components/imageViewer";
 import { useMemo, useEffect } from "react";
 import axios from "axios";
 
@@ -72,9 +72,10 @@ function ImagesGalleries({
 }: ImagesGalleriesProps): React.JSX.Element {
   return (
     <div className="flex-row justify-center flex flex-wrap gap-5">
-      {images.map((image) => (
+      {/* {images.map((image) => (
         <ImageViewer key={image.id} {...image} width={520} height={520} />
-      ))}
+      ))} */}
+      <div>images</div>
     </div>
   );
 }

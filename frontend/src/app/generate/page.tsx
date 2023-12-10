@@ -2,15 +2,25 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
-import { MouseEvent, useEffect, useState, ComponentProps } from "react";
+import { MouseEvent, useEffect, useState, useCallback } from "react";
 import React from "react";
 import { Loader2 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { BACKEND_URL } from "@/lib/constants";
-import { Images, Image, Prompts, Prompt, PromptStack } from "@/models";
+import lodash from "lodash";
+import {
+  Images,
+  Image,
+  ImageResponse,
+  Prompts,
+  Prompt,
+  PromptStack,
+} from "@/models";
 import ImagesGroup from "@/components/imagesGroup";
+import { v4 as uuidv4 } from "uuid";
 
 let socket: Socket;
+
 export default function Generate() {
   const [prompt, setPrompt] = useState<string>("");
   const [isSendingRequest, setIsSendingRequest] = useState<boolean>(false);
@@ -19,9 +29,57 @@ export default function Generate() {
   const [promptStack, setPromptStack] = useState<PromptStack>(
     [] as PromptStack
   );
-  const [images, setImages] = useState<Images>({} as Images);
 
-  const initSocket = async () => {
+  const saveImgsToLocalStorage = useCallback(
+    ({
+      input,
+      id,
+      output,
+    }: {
+      input: { prompt: string; negative_prompt: string };
+      id: string;
+      output: ImageResponse[];
+    }) => {
+      console.log("input = ", input);
+      const { prompt, negative_prompt } = input;
+      const promptId = id;
+      let updatedImages: Images = JSON.parse(
+        localStorage.getItem("images") || "{}"
+      );
+
+      setPrevPrompts((prevPrompts) => {
+        let updatedPrompts = lodash.cloneDeep(prevPrompts);
+        let promptWithId = lodash.cloneDeep(updatedPrompts[promptId]);
+
+        if (
+          !promptWithId ||
+          promptWithId.prompt != prompt ||
+          promptWithId.negativePrompt != negative_prompt ||
+          promptWithId.imageIds.length !== 0
+        )
+          return prevPrompts;
+        for (const img of output) {
+          // image already exists
+          if (!img || !img.image || updatedImages[img.image]) continue;
+          let _img: Image = {
+            url: img.image,
+            prompt,
+            negativePrompt: negative_prompt,
+            promptId,
+          };
+          const imgId = uuidv4();
+          updatedPrompts[promptId].imageIds.push(imgId);
+          updatedImages[imgId] = _img;
+        }
+        localStorage.setItem("prompts", JSON.stringify(updatedPrompts));
+        localStorage.setItem("images", JSON.stringify(updatedImages));
+        return updatedPrompts;
+      });
+    },
+    []
+  );
+
+  const initSocket = useCallback(async () => {
     if (!socket) socket = io(BACKEND_URL);
     console.log("socket = ", socket);
     socket.on("connect", () => {
@@ -32,33 +90,37 @@ export default function Generate() {
       console.log("message = ", message);
     });
 
-    socket.on("taskFinished", (data) => {
-      console.log("data = ", data);
+    socket.on("taskFinished", (res) => {
+      console.log("res = ", res);
+      if (!res.ok) {
+        // display a toast signaling the user that the image generation failed
+        return;
+      }
+      const { data } = res;
+      saveImgsToLocalStorage(data);
     });
-  };
+  }, [saveImgsToLocalStorage]);
 
-  const getPrompts = () => {
+  const getPrompts = useCallback(() => {
     const prompts = localStorage.getItem("prompts");
     const _promptStack = localStorage.getItem("promptStack");
+
     if (prompts) {
       setPrevPrompts(JSON.parse(prompts));
     }
     if (_promptStack) {
       setPromptStack(JSON.parse(_promptStack));
     }
-  };
-
-  const getImages = () => {
-    const images = localStorage.getItem("images");
-    if (images) {
-      setImages(JSON.parse(images));
-    }
-  };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== undefined && window.localStorage) {
       getPrompts();
-      getImages();
+    }
+  }, [getPrompts]);
+
+  useEffect(() => {
+    if (typeof window !== undefined && window.localStorage) {
       initSocket();
     }
   }, []);
@@ -152,7 +214,7 @@ export default function Generate() {
         </div>
       </section>
       <section className="w-full px-10" style={{ border: "3px solid green" }}>
-        <ImagesGroup {...{ promptStack, prevPrompts, images }} />
+        <ImagesGroup {...{ promptStack, prevPrompts }} />
       </section>
     </main>
   );

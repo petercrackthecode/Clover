@@ -2,12 +2,16 @@ export interface Image {
   url: string;
   prompt: string;
   negativePrompt: string;
-  isLoading: boolean;
   promptId: string;
 }
 
 export interface Images {
   [id: string]: Image;
+}
+
+export interface ImageResponse {
+  image: string;
+  seed: Number;
 }
 
 export interface Prompt {
