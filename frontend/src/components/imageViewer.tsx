@@ -15,8 +15,8 @@ export function ImageViewer({
   negativePrompt,
 }: ImageViewerProps): React.JSX.Element {
   return (
-    <div className="text-center cursor-pointer">
-      <img src={url} alt={prompt} className="rounded-lg" />
+    <div className="text-center overflow-y-hidden lg:h-72 md:h-52 sm:h-64 max-h-full m-auto cursor-pointer object-contain">
+      <img src={url} alt={prompt} className="h-full object-fill" />
     </div>
   );
 }

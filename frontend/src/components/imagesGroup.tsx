@@ -37,22 +37,23 @@ export default function ImagesGroup({
               <ImagePlaceholder key={idx} />
             ))}
           </div>
-          <p className="w-full text-center">{prompt}</p>
+          <div className="w-full flex flex-row justify-center">
+            <p className="block w-fit text-left break-all">{prompt}</p>
+          </div>
         </div>
       );
 
     return (
-      <div className="flex flex-col w-full" key={pId}>
-        <div
-          className="w-full grid lg:h-60 md:h-52 sm:h-96 lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-2 xs:grid-cols-2 gap-4"
-          // style={{ border: "3px solid red" }}
-        >
+      <div className="flex flex-col w-full gap-4" key={pId}>
+        <div className="w-full relative grid lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-2 gap-4">
           {imageIds.map((imageId: string) => (
             // convert the imageId into real image Url through localStorage.getItem('images')
             <ImageViewer key={imageId} {...getImageById(imageId)} />
           ))}
         </div>
-        <p className="w-full text-center">{prompt}</p>
+        <div className="w-full flex flex-row justify-center">
+          <p className="block w-fit text-left break-all">{prompt}</p>
+        </div>
       </div>
     );
   };
