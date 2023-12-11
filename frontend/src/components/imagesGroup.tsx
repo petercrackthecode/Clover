@@ -1,3 +1,4 @@
+"use client";
 import { PromptStack, Prompts, Prompt, Images } from "@/models";
 import React, { useCallback } from "react";
 import { ImageViewer, ImagePlaceholder, ImageViewerProps } from "./imageViewer";

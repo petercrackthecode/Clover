@@ -178,10 +178,7 @@ export default function Generate() {
 
   return (
     <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
-      <section
-        className="flex flex-col gap-y-9 pt-2 mb-5 mt-24 w-full xl:px-96 lg:px-60 md:px-20 sm:px-10"
-        style={{ border: "3px solid red" }}
-      >
+      <section className="flex flex-col gap-y-9 pt-2 mb-5 mt-24 w-full xl:px-96 lg:px-60 md:px-20 sm:px-10">
         <div className="flex flex-col">
           <label htmlFor="prompt">Describe your image</label>
           <Textarea
@@ -219,7 +216,7 @@ export default function Generate() {
           </div>
         </div>
       </section>
-      <section className="w-full px-10" style={{ border: "3px solid green" }}>
+      <section className="w-full px-10">
         <ImagesGroup {...{ promptStack, prevPrompts }} />
       </section>
     </main>

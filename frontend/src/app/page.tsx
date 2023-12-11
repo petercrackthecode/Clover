@@ -6,45 +6,42 @@ import { ImageViewer } from "@/components/imageViewer";
 import { useMemo, useEffect, useState } from "react";
 import GridPicker from "@/components/gridPicker";
 import { Images, Image } from "@/models";
-import classNames from "classnames";
 
 export default function Home() {
-  const [gridCol, setGridCol] = useState<number>(6);
+  const [gridCol, setGridCol] = useState<number>(
+    typeof window !== "undefined" && localStorage.getItem("gridCol")
+      ? parseInt(localStorage.getItem("gridCol")!)
+      : 6
+  );
 
   useEffect(function getGridColFromLocalStorage() {
-    if (typeof window !== "undefined" && window.localStorage) {
-      const gridColStr = window.localStorage.getItem("gridCol");
-      const gridColVal = gridColStr ? parseInt(gridColStr) : 6;
-      setGridCol(gridColVal);
-    }
+    const gridColStr = window.localStorage.getItem("gridCol");
+    const gridColVal = gridColStr ? parseInt(gridColStr) : 6;
+    setGridCol(gridColVal);
   }, []);
 
   useEffect(
     function saveGridColToLocalStorage() {
-      if (typeof window !== "undefined" && window.localStorage) {
-        window.localStorage.setItem("gridCol", gridCol.toString());
-      }
+      window.localStorage.setItem("gridCol", gridCol.toString());
     },
     [gridCol]
   );
 
   const images = useMemo((): Images => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      const currentImages = window.localStorage.getItem("images");
-      const imagesObj = JSON.parse(
-        currentImages ? currentImages : "{}"
-      ) as Images;
-      const uniqueImagesUrl = new Set<string>();
-      const uniqueImagesObj = {} as Images;
-      Object.entries(imagesObj).forEach(([key, image]) => {
-        if (!uniqueImagesUrl.has(image.url)) {
-          uniqueImagesUrl.add(image.url);
-          uniqueImagesObj[key] = image;
-        }
-      });
-      console.log("uniqueImagesObj", uniqueImagesObj);
-      return uniqueImagesObj;
-    }
+    const currentImages = window.localStorage.getItem("images");
+    const imagesObj = JSON.parse(
+      currentImages ? currentImages : "{}"
+    ) as Images;
+    const uniqueImagesUrl = new Set<string>();
+    const uniqueImagesObj = {} as Images;
+    Object.entries(imagesObj).forEach(([key, image]) => {
+      if (!uniqueImagesUrl.has(image.url)) {
+        uniqueImagesUrl.add(image.url);
+        uniqueImagesObj[key] = image;
+      }
+    });
+    console.log("uniqueImagesObj", uniqueImagesObj);
+    return uniqueImagesObj;
     return {} as Images;
   }, []);
   return (
@@ -104,7 +101,7 @@ function ImagesGalleries({
   console.log("col", col);
   return (
     <div
-      className={classNames("grid w-full gap-5")}
+      className="grid w-full gap-1"
       style={{ gridTemplateColumns: `repeat(${col}, 1fr)` }}
     >
       {Object.entries(images).map(([key, { prompt, negativePrompt, url }]) => (
