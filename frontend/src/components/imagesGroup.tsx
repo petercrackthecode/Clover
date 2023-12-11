@@ -35,15 +35,8 @@ export default function ImagesGroup({
     const { prompt, imageIds } = _prompt;
     if (!imageIds || imageIds.length == 0)
       return (
-        <div
-          className="flex flex-col gap-4"
-          key={pId}
-          // style={{ border: "3px solid yellow" }}
-        >
-          <div
-            className="w-full grid lg:h-60 md:h-52 sm:h-96 lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-2 xs:grid-cols-2 gap-4"
-            // style={{ border: "3px solid red" }}
-          >
+        <div className="flex flex-col gap-4" key={pId}>
+          <div className="w-full grid lg:h-60 md:h-52 sm:h-96 lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-2 xs:grid-cols-2 gap-4">
             {[0, 1, 2, 3].map((_: Number, idx: any) => (
               <ImagePlaceholder key={idx} />
             ))}

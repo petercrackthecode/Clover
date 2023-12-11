@@ -6,6 +6,7 @@ import { FaHeart } from "react-icons/fa";
 import classNames from "classnames";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { FiCopy } from "react-icons/fi";
 
 export type ImageViewerProps = {
   imageId: string;
@@ -56,7 +57,10 @@ export function ImageViewer({
         <div className="grid grid-cols-1 gap-4 py-4">
           <div className="flex flex-col justify-evenly items-start rounded-lg bg-zinc-600 gap-3 px-5 py-2">
             <p className="break-all">{prompt}</p>
-            <Button>Copy Prompt</Button>
+            <Button>
+              <FiCopy className="mr-1" />
+              Copy Prompt
+            </Button>
           </div>
           <div className="flex flex-col px-5 justify-center items-start gap-1">
             <label className="text-gray-400">Model</label>

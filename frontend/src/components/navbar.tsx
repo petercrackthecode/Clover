@@ -42,7 +42,7 @@ function NavLinks() {
   const items: { title: string; href: string }[] = [
     { title: "Home", href: "/" },
     { title: "Generate", href: "/generate" },
-    { title: "History", href: "/history" },
+    // { title: "History", href: "/history" },
     { title: "Likes", href: "/likes" },
   ];
 
@@ -87,7 +87,7 @@ function NavLinksMobile() {
   const items: { icon: React.ReactElement; href: string }[] = [
     { icon: <HomeIcon />, href: "/" },
     { icon: <ApertureIcon />, href: "/generate" },
-    { icon: <HistoryIcon />, href: "/history" },
+    // { icon: <HistoryIcon />, href: "/history" },
     { icon: <HeartIcon />, href: "/likes" },
   ];
 
