@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
-import { MouseEvent, useEffect, useState, useCallback } from "react";
+import { MouseEvent, useEffect, useState, useCallback, useMemo } from "react";
 import React from "react";
 import { Loader2 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
@@ -15,6 +15,7 @@ import {
   Prompts,
   Prompt,
   PromptStack,
+  Likes,
 } from "@/models";
 import ImagesGroup from "@/components/imagesGroup";
 import { v4 as uuidv4 } from "uuid";
@@ -28,6 +29,11 @@ export default function Generate() {
   const [prevPrompts, setPrevPrompts] = useState<Prompts>({} as Prompts);
   const [promptStack, setPromptStack] = useState<PromptStack>(
     [] as PromptStack
+  );
+  const [likedImageIds, setLikedImageIds] = useState<Likes>(
+    typeof window !== "undefined" && localStorage.getItem("likes")
+      ? new Set(JSON.parse(localStorage.getItem("likes")!))
+      : new Set()
   );
 
   const saveImgsToLocalStorage = useCallback(
@@ -57,10 +63,10 @@ export default function Generate() {
           promptWithId.imageIds.length !== 0
         )
           return prevPrompts;
-        console.log("promptWithId = ", promptWithId);
-        console.log("prompt = ", prompt);
-        console.log("promptId = ", promptId);
-        console.log("updating prevPrompts");
+        // console.log("promptWithId = ", promptWithId);
+        // console.log("prompt = ", prompt);
+        // console.log("promptId = ", promptId);
+        // console.log("updating prevPrompts");
         for (const img of output) {
           // image already exists
           if (!img || !img.image) continue;
@@ -81,6 +87,24 @@ export default function Generate() {
     },
     []
   );
+
+  function getLikesImageIds() {
+    const likesStr = window.localStorage.getItem("likes");
+    const likesObj = new Set(JSON.parse(likesStr ? likesStr : "[]")) as Likes;
+    setLikedImageIds(likesObj);
+  }
+
+  function toggleImageLike(imageId: string) {
+    setLikedImageIds((likedImageIds) => {
+      const newLikedImageIds = new Set(likedImageIds);
+      if (likedImageIds.has(imageId)) {
+        newLikedImageIds.delete(imageId);
+      } else {
+        newLikedImageIds.add(imageId);
+      }
+      return newLikedImageIds;
+    });
+  }
 
   const initSocket = useCallback(async () => {
     if (!socket) socket = io(BACKEND_URL);
@@ -115,9 +139,20 @@ export default function Generate() {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("within useEffect, prevPrompts = ", prevPrompts);
-  }, [prevPrompts]);
+  // useEffect(() => {
+  //   console.log("within useEffect, prevPrompts = ", prevPrompts);
+  // }, [prevPrompts]);
+
+  useEffect(
+    function saveLikesToDB() {
+      console.log("I'm being called");
+      window.localStorage.setItem(
+        "likes",
+        JSON.stringify(Array.from(likedImageIds))
+      );
+    },
+    [likedImageIds]
+  );
 
   useEffect(() => {
     if (typeof window !== undefined && window.localStorage) {
@@ -128,6 +163,7 @@ export default function Generate() {
   useEffect(() => {
     if (typeof window !== undefined && window.localStorage) {
       initSocket();
+      getLikesImageIds();
     }
   }, []);
 
@@ -217,7 +253,14 @@ export default function Generate() {
         </div>
       </section>
       <section className="w-full px-10">
-        <ImagesGroup {...{ promptStack, prevPrompts }} />
+        <ImagesGroup
+          {...{
+            promptStack,
+            prevPrompts,
+            likedImageIds,
+            toggleImageLike,
+          }}
+        />
       </section>
     </main>
   );

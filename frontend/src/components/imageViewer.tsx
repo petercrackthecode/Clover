@@ -5,22 +5,25 @@ import { Image as ImageIcon } from "lucide-react";
 import { FaHeart } from "react-icons/fa";
 import classNames from "classnames";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export type ImageViewerProps = {
+  imageId: string;
   url: string;
   prompt: string;
   negativePrompt: string;
+  liked: boolean;
+  toggleImageLike: (imageId: string) => void;
   customClasses?: string;
 };
 
 export function ImageViewer({
+  imageId,
   url,
   prompt,
   negativePrompt,
+  liked,
+  toggleImageLike,
   customClasses,
 }: ImageViewerProps): React.JSX.Element {
   return (
@@ -32,12 +35,18 @@ export function ImageViewer({
             customClasses
           )}
         >
-          <div
-            className="absolute inset-0 p-2 flex flex-row justify-end items-star opacity-0 hover:opacity-100"
-            onClick={() => console.log("Hi")}
-          >
-            <div className="flex flex-row justify-center items-center p-2 bg-black bg-opacity-40 hover:bg-opacity-100 h-10 w-10 sm:h-8 sm:w-8 rounded-lg">
-              <FaHeart />
+          <div className="absolute inset-0 p-2 flex flex-row justify-end items-star opacity-0 hover:opacity-100">
+            <div
+              className="flex flex-row justify-center items-center p-2 bg-black bg-opacity-40 hover:bg-opacity-100 h-10 w-10 sm:h-8 sm:w-8 rounded-lg"
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                console.log("liked");
+                toggleImageLike(imageId);
+              }}
+              // style={{ border: "3px solid red" }}
+            >
+              <FaHeart color={liked ? "red" : "white"} />
             </div>
           </div>
           <img src={url} alt={prompt} className="h-full object-fill" />

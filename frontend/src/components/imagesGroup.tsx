@@ -1,25 +1,35 @@
 "use client";
-import { PromptStack, Prompts, Prompt, Images } from "@/models";
+import { PromptStack, Prompts, Prompt, Likes } from "@/models";
 import React, { useCallback } from "react";
 import { ImageViewer, ImagePlaceholder, ImageViewerProps } from "./imageViewer";
 
 export default function ImagesGroup({
   promptStack,
   prevPrompts,
+  likedImageIds,
+  toggleImageLike,
 }: {
   promptStack: PromptStack;
   prevPrompts: Prompts;
+  likedImageIds: Likes;
+  toggleImageLike: (imageId: string) => void;
 }) {
-  const getImageById = useCallback((imageId: string): ImageViewerProps => {
-    const images = JSON.parse(localStorage.getItem("images") || "{}");
-    const image = images[imageId];
+  const getImageById = useCallback(
+    (imageId: string): ImageViewerProps => {
+      const images = JSON.parse(localStorage.getItem("images") || "{}");
+      const image = images[imageId];
 
-    return {
-      prompt: image.prompt,
-      negativePrompt: image.negativePrompt,
-      url: image.url,
-    };
-  }, []);
+      return {
+        prompt: image.prompt,
+        negativePrompt: image.negativePrompt,
+        url: image.url,
+        imageId,
+        liked: likedImageIds.has(imageId),
+        toggleImageLike,
+      };
+    },
+    [likedImageIds, toggleImageLike]
+  );
 
   const promptToImages = (pId: string, _prompt: Prompt) => {
     const { prompt, imageIds } = _prompt;

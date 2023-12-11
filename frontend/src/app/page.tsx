@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ImageViewer } from "@/components/imageViewer";
 import { useMemo, useEffect, useState } from "react";
 import GridPicker from "@/components/gridPicker";
-import { Images, Image } from "@/models";
+import { Images, Likes } from "@/models";
 
 export default function Home() {
   const [gridCol, setGridCol] = useState<number>(
@@ -13,18 +13,57 @@ export default function Home() {
       ? parseInt(localStorage.getItem("gridCol")!)
       : 6
   );
+  const [likedImageIds, setLikedImageIds] = useState<Likes>(
+    typeof window !== "undefined" && localStorage.getItem("likes")
+      ? new Set(JSON.parse(localStorage.getItem("likes")!))
+      : new Set()
+  );
 
-  useEffect(function getGridColFromLocalStorage() {
+  function getGridCol() {
     const gridColStr = window.localStorage.getItem("gridCol");
     const gridColVal = gridColStr ? parseInt(gridColStr) : 6;
     setGridCol(gridColVal);
+  }
+
+  function getLikesImageIds() {
+    const likesStr = window.localStorage.getItem("likes");
+    const likesObj = new Set(JSON.parse(likesStr ? likesStr : "[]")) as Likes;
+    setLikedImageIds(likesObj);
+  }
+
+  function toggleImageLike(imageId: string) {
+    setLikedImageIds((likedImageIds) => {
+      const newLikedImageIds = new Set(likedImageIds);
+      if (likedImageIds.has(imageId)) {
+        newLikedImageIds.delete(imageId);
+      } else {
+        newLikedImageIds.add(imageId);
+      }
+      return newLikedImageIds;
+    });
+  }
+
+  useEffect(() => {
+    getGridCol();
+    getLikesImageIds();
   }, []);
 
   useEffect(
-    function saveGridColToLocalStorage() {
+    function saveGridColToDB() {
       window.localStorage.setItem("gridCol", gridCol.toString());
     },
     [gridCol]
+  );
+
+  useEffect(
+    function saveLikesToDB() {
+      console.log("I'm being called");
+      window.localStorage.setItem(
+        "likes",
+        JSON.stringify(Array.from(likedImageIds))
+      );
+    },
+    [likedImageIds]
   );
 
   const images = useMemo((): Images => {
@@ -42,7 +81,6 @@ export default function Home() {
     });
     console.log("uniqueImagesObj", uniqueImagesObj);
     return uniqueImagesObj;
-    return {} as Images;
   }, []);
   return (
     <main className="w-full overflow-x-hidden min-h-screen text-white bg-zinc-800 flex flex-col items-center">
@@ -79,7 +117,9 @@ export default function Home() {
           <ImagesGalleries
             images={images}
             col={gridCol}
+            likedImageIds={likedImageIds}
             filterImages={() => {}}
+            toggleImageLike={toggleImageLike}
           />
         </section>
       )}
@@ -90,13 +130,17 @@ export default function Home() {
 interface ImagesGalleriesProps {
   images: Images;
   filterImages: () => void;
+  toggleImageLike: (imageId: string) => void;
   col: number;
+  likedImageIds: Likes;
 }
 
 function ImagesGalleries({
   images,
-  filterImages,
   col,
+  likedImageIds,
+  filterImages,
+  toggleImageLike,
 }: ImagesGalleriesProps): React.JSX.Element {
   console.log("col", col);
   return (
@@ -105,7 +149,17 @@ function ImagesGalleries({
       style={{ gridTemplateColumns: `repeat(${col}, 1fr)` }}
     >
       {Object.entries(images).map(([key, { prompt, negativePrompt, url }]) => (
-        <ImageViewer key={key} {...{ prompt, negativePrompt, url }} />
+        <ImageViewer
+          key={key}
+          {...{
+            prompt,
+            negativePrompt,
+            url,
+            toggleImageLike,
+            imageId: key,
+            liked: likedImageIds.has(key),
+          }}
+        />
       ))}
     </div>
   );
