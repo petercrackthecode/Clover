@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ImageViewer } from "@/components/imageViewer";
 import { useMemo, useEffect, useState } from "react";
 import GridPicker from "@/components/gridPicker";
-import { Images, Likes } from "@/models";
+import { Image, Images, Likes } from "@/models";
 
 export default function Home() {
   const [gridCol, setGridCol] = useState<number>(
@@ -13,6 +13,7 @@ export default function Home() {
       ? parseInt(localStorage.getItem("gridCol")!)
       : 6
   );
+  const [query, setQuery] = useState<string>("");
   const [likedImageIds, setLikedImageIds] = useState<Likes>(
     typeof window !== "undefined" && localStorage.getItem("likes")
       ? new Set(JSON.parse(localStorage.getItem("likes")!))
@@ -92,6 +93,8 @@ export default function Home() {
             <input
               className="bg-inherit border-0 outline-none grow"
               placeholder="Search for an image"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
           </div>
           <div className="flex flex-row justify-center gap-x-2">
@@ -118,7 +121,12 @@ export default function Home() {
             images={images}
             col={gridCol}
             likedImageIds={likedImageIds}
-            filterImages={() => {}}
+            filterImages={(image: Image) => {
+              return (
+                image.prompt.includes(query) ||
+                image.negativePrompt.includes(query)
+              );
+            }}
             toggleImageLike={toggleImageLike}
           />
         </section>
@@ -129,7 +137,7 @@ export default function Home() {
 
 interface ImagesGalleriesProps {
   images: Images;
-  filterImages: () => void;
+  filterImages: (image: Image) => boolean;
   toggleImageLike: (imageId: string) => void;
   col: number;
   likedImageIds: Likes;
@@ -142,25 +150,37 @@ export function ImagesGalleries({
   filterImages,
   toggleImageLike,
 }: ImagesGalleriesProps): React.JSX.Element {
-  console.log("col", col);
+  const filteredImages = useMemo(() => {
+    let _filteredImages = {} as Images;
+    Object.entries(images).map(([key, image]) => {
+      if (filterImages(image)) {
+        _filteredImages[key] = image;
+      }
+    });
+
+    return _filteredImages;
+  }, [images, filterImages]);
+
   return (
     <div
       className="grid w-full gap-1"
       style={{ gridTemplateColumns: `repeat(${col}, 1fr)` }}
     >
-      {Object.entries(images).map(([key, { prompt, negativePrompt, url }]) => (
-        <ImageViewer
-          key={key}
-          {...{
-            prompt,
-            negativePrompt,
-            url,
-            toggleImageLike,
-            imageId: key,
-            liked: likedImageIds.has(key),
-          }}
-        />
-      ))}
+      {Object.entries(filteredImages).map(
+        ([key, { prompt, negativePrompt, url }]) => (
+          <ImageViewer
+            key={key}
+            {...{
+              prompt,
+              negativePrompt,
+              url,
+              toggleImageLike,
+              imageId: key,
+              liked: likedImageIds.has(key),
+            }}
+          />
+        )
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Likes, Images } from "@/models";
+import { Likes, Image, Images } from "@/models";
 import lodash from "lodash";
 import { ImagesGalleries } from "../page";
 
@@ -60,8 +60,8 @@ export default function Likes() {
           <ImagesGalleries
             images={uniqueLikedImgs}
             col={6}
+            filterImages={(image: Image) => true}
             likedImageIds={likedImageIds}
-            filterImages={() => {}}
             toggleImageLike={toggleImageLike}
           />
         </section>
