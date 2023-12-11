@@ -45,8 +45,8 @@ export default function Home() {
     return {} as Images;
   }, []);
   return (
-    <main className="w-full min-h-screen text-white bg-zinc-800 flex flex-col items-center">
-      <section className="w-[500px] flex flex-col gap-y-9 p-2 mt-24">
+    <main className="w-full overflow-x-hidden min-h-screen text-white bg-zinc-800 flex flex-col items-center">
+      <section className="w-11/12 md:w-[500px] flex flex-col gap-y-9 p-2 mt-24">
         <h1 className="text-7xl font-semibold text-center">Clover</h1>
         <div className="flex flex-col gap-y-4">
           <div className="p-2 bg-zinc-600 flex flex-row rounded-full">

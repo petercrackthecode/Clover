@@ -26,4 +26,5 @@ export interface Prompts {
   [id: string]: Prompt;
 }
 
+// a set of image ids that the user has liked
 export type Likes = Set<string>;
