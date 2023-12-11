@@ -79,7 +79,7 @@ export default function Home() {
         uniqueImagesObj[key] = image;
       }
     });
-    console.log("uniqueImagesObj", uniqueImagesObj);
+    // console.log("uniqueImagesObj", uniqueImagesObj);
     return uniqueImagesObj;
   }, []);
   return (
@@ -135,7 +135,7 @@ interface ImagesGalleriesProps {
   likedImageIds: Likes;
 }
 
-function ImagesGalleries({
+export function ImagesGalleries({
   images,
   col,
   likedImageIds,
