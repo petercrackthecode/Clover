@@ -58,7 +58,6 @@ export default function Home() {
 
   useEffect(
     function saveLikesToDB() {
-      console.log("I'm being called");
       window.localStorage.setItem(
         "likes",
         JSON.stringify(Array.from(likedImageIds))
@@ -80,7 +79,6 @@ export default function Home() {
         uniqueImagesObj[key] = image;
       }
     });
-    // console.log("uniqueImagesObj", uniqueImagesObj);
     return uniqueImagesObj;
   }, []);
   return (

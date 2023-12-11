@@ -42,7 +42,6 @@ export function ImageViewer({
               onClick={(event) => {
                 event.stopPropagation();
                 event.preventDefault();
-                console.log("liked");
                 toggleImageLike(imageId);
               }}
               // style={{ border: "3px solid red" }}

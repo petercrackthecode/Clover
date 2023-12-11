@@ -63,10 +63,6 @@ export default function Generate() {
           promptWithId.imageIds.length !== 0
         )
           return prevPrompts;
-        // console.log("promptWithId = ", promptWithId);
-        // console.log("prompt = ", prompt);
-        // console.log("promptId = ", promptId);
-        // console.log("updating prevPrompts");
         for (const img of output) {
           // image already exists
           if (!img || !img.image) continue;
@@ -109,7 +105,7 @@ export default function Generate() {
   const initSocket = useCallback(async () => {
     if (!socket) socket = io(BACKEND_URL);
     socket.on("connect", () => {
-      console.log("connected. Socket id = ", socket.id);
+      // console.log("connected. Socket id = ", socket.id);
     });
 
     socket.on("hi", (message) => {
@@ -117,7 +113,6 @@ export default function Generate() {
     });
 
     socket.on("taskFinished", (res) => {
-      console.log("res = ", res);
       if (!res.ok) {
         // display a toast signaling the user that the image generation failed
         return;
@@ -139,13 +134,8 @@ export default function Generate() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   console.log("within useEffect, prevPrompts = ", prevPrompts);
-  // }, [prevPrompts]);
-
   useEffect(
     function saveLikesToDB() {
-      console.log("I'm being called");
       window.localStorage.setItem(
         "likes",
         JSON.stringify(Array.from(likedImageIds))
@@ -190,7 +180,6 @@ export default function Generate() {
     setIsSendingRequest(true);
     await axios(config)
       .then((res) => {
-        console.log(res.data);
         // need a better error handling here
         // check for ok === false
         const {
