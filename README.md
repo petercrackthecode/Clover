@@ -1,6 +1,6 @@
 ## Installation
 
-1. Go to ` ./backend`, follow the instruction within `backend/README.md`to start the backend server.
+1. Go to `./backend`, follow the instruction within `backend/README.md`to start the backend server.
    1b. Optional: If you are running this project on your local machine, you can use`ngrok`to expose the server to the internet. This steps ensured that the`/webhook` callback by RunPod API is forwarded to your local machine.
 2. Go to `./frontend, follow the instruction within `frontend/README.md` to start the frontend server.
 
