@@ -1,7 +1,7 @@
 import express from 'express';
 import logger from '../utils/logger';
 import axios from 'axios';
-import { RUNPOD_API, WEBHOOK_URL } from '../utils/constants';
+import { RUNPOD_API } from '../utils/constants';
 
 export const generateImages = async (req: express.Request, res: express.Response) => {
   const { prompt, negative_prompt } = req.body;
@@ -39,7 +39,7 @@ export const generateImages = async (req: express.Request, res: express.Response
         num_outputs: 4,
         scheduler: 'KLMS',
       },
-      webhook: WEBHOOK_URL,
+      webhook: process.env.WEBHOOK_URL || '',
     }),
   };
 
