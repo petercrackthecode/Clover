@@ -12,6 +12,6 @@
 
 ## Known Issues
 
-- The images only exist on Cloudflare for a short amount of time (24 hours). Afterward, they will die.
+- The images only exist on Cloudflare for a short amount of time (24 hours). Afterward, the images url will expire, and image links become invalid.
 - There are 2 socket connections triggered each time client connects to the server. Potential fix: creating a React Hooks called useSocket to avoid duplicated connections.
 - The backend doesn't support multi-tenants within the socket part on the server.
