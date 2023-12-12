@@ -13,5 +13,6 @@
 ## Known Issues
 
 - The images only exist on Cloudflare for a short amount of time (24 hours). Afterward, the images url will expire, and image links become invalid.
+- Sometimes the RunPod API does return `fail` for a queued task, which you can see from the backend console. This issue is not handled yet.
 - There are 2 socket connections triggered each time client connects to the server. Potential fix: creating a React Hooks called useSocket to avoid duplicated connections.
 - The backend doesn't support multi-tenants within the socket part on the server.
