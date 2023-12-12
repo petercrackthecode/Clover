@@ -4,7 +4,7 @@
 1b. Optional: If you are running this project on your local machine, you can use`ngrok`to expose the server to the internet. This steps ensured that the`/webhook` callback by RunPod API is forwarded to your local machine.
 2. Go to `./frontend, follow the instruction within `frontend/README.md` to start the frontend server.
 
-# Tech stacks
+## Tech stacks
 
 1. Frontend: Next.js, React, TypeScript, TailwindCSS, ShadCN UI, RadixUI, Socket.io-client.
 2. Backend: Node.js with Express.js, TypeScript, Socket.io, Ngrok (Optional), RunPod API.
