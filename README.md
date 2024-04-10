@@ -1,3 +1,6 @@
+# Clover- Image generator
+Clover ☘️ is an image generator app using the Stable Diffusion XL model via the RunPod API.
+
 ## Installation
 
 1. Go to `./backend`, follow the instruction within `backend/README.md`to start the backend server.<br>
